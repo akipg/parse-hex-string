@@ -7,6 +7,7 @@ python parse_hex_string.py stream.txt
 ```
 
 output:
+
 ![](doc/img1.png)
 
 hex string stream input:
