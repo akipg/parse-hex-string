@@ -20,6 +20,11 @@ def main():
         Item("test_int16_t_string ",     Int16_t),
         Item("test_uint8_t_string ",     Uint8_t),
         Item("test_int8_t_string  ",      Int8_t),
+        Item("test_vector",    Vector("vectortype", Uint8_t)),
+        Item("test_struct",    Struct("stcuttype", [
+            Item("a",    Uint8_t),
+            Item("b",    Uint8_t),
+        ])),
         ">>UNINDENT<<",
     ]
 
@@ -153,9 +158,10 @@ class Vector(Type):
         item_nums = []
         idxStart = self.length_field_size_byte
         for i in range(length_num):
-            if DEBUG: print(TAB*global_indents + "\033[7;33munpacking Vector", self.name, "Number", i+1, "of", length_num, self.item_type_obj.name, "\033[0m")    
             itemData = data[idxStart:]
             item_num = self.item_type_obj.unpack(itemData)
+            if DEBUG:
+                print(TAB*global_indents + "\033[7;33munpacking Vector", self.name, "Number", i+1, "of", length_num, self.item_type_obj.name, "=", item_num, "\033[0m")    
             item_nums.append(item_num)
             self.fmt += self.item_type_obj.fmt
             idxStart += self.item_type_obj.size_byte
@@ -166,7 +172,7 @@ class Vector(Type):
         return (length_num, item_nums)
     
 
-def Struct(Type):
+class Struct(Type):
     def __init__(self, name:str, fields=[], endian:str=">"):
         self.name:str = name
         self.fmt:StrFmtWithOutEndian = None
@@ -186,12 +192,12 @@ def Struct(Type):
         idxStart = 0
         global_indents += 1
         for field in self.fields:
-            if DEBUG and not isinstance(field.type_obj, Struct) and not isinstance(field.type_obj, Vector):
-                print(TAB*global_indents + "\033[1;31munpacking Struct", self.name, "Field", field.name, "\033[0m")
             fieldData = data[idxStart:]
             field_num = field.unpack(fieldData)
+            if DEBUG and not isinstance(field.type_obj, Struct) and not isinstance(field.type_obj, Vector):
+                print(TAB*global_indents + "\033[1;31munpacking Struct", self.name, "Field", field.name, "=", field_num, "\033[0m")
             field_nums.append(field_num)
-            self.fmt += field.fmt
+            # self.fmt += field.fmt
             idxStart += field.size_byte
         global_indents -= 1
         
